@@ -115,9 +115,18 @@
                <button type="button" class="login__button" id="success-accept">Aceptar</button>
             </div>
          </div>
+
+         <!--=============== BIENVENIDA (SESIÓN INICIADA) ===============-->
+         <div class="login__overlay" id="welcome-screen" hidden>
+            <div class="login__message">
+               <i class="ri-user-smile-line login__message-icon"></i>
+               <p class="login__message-text" id="welcome-text">Bienvenido</p>
+               <button type="button" class="login__button" id="logout-btn">Cerrar sesión</button>
+            </div>
+         </div>
       </div>
 
       <!--=============== MAIN JS ===============-->
-      <script src="assets/js/main.js"></script>
+      <script type="module" src="assets/js/main.js"></script>
    </body>
 </html>

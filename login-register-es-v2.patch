@@ -1,0 +1,353 @@
+diff -ruN orig/escapparate-main/assets/css/styles.css proj/escapparate-main/assets/css/styles.css
+--- assets/css/styles.css	2026-11-24 17:19:30.000000000 +0000
++++ assets/css/styles.css	2026-11-24 17:23:13.565924229 +0000
+@@ -166,6 +166,42 @@
+   text-decoration: underline;
+ }
+ 
++.login__form[hidden] {
++  display: none;
++}
++
++/*=============== OVERLAY DE MENSAJE (CUENTA CREADA) ===============*/
++.login__overlay {
++  position: fixed;
++  inset: 0;
++  display: grid;
++  place-items: center;
++  background-color: hsla(0, 0%, 0%, 0.6);
++  z-index: 100;
++}
++.login__overlay[hidden] {
++  display: none;
++}
++.login__message {
++  width: 90%;
++  max-width: 320px;
++  background-color: hsl(0, 0%, 14%);
++  border: 2px solid var(--white-color);
++  border-radius: 1rem;
++  padding: 2rem 1.5rem;
++  text-align: center;
++  display: grid;
++  row-gap: 1rem;
++}
++.login__message-icon {
++  font-size: 3rem;
++  justify-self: center;
++  color: var(--white-color);
++}
++.login__message-text {
++  font-weight: var(--font-medium);
++}
++
+ /* Input focus move up label */
+ .login__input:focus + .login__label {
+   top: -12px;
+diff -ruN orig/escapparate-main/assets/js/main.js proj/escapparate-main/assets/js/main.js
+--- assets/js/main.js	2026-11-24 17:19:30.000000000 +0000
++++ assets/js/main.js	2026-11-24 17:25:05.339220868 +0000
+@@ -1,26 +1,95 @@
+-/*=============== SHOW HIDDEN - PASSWORD ===============*/
+-const showHiddenPass = (loginPass, loginEye) =>{
+-   const input = document.getElementById(loginPass),
+-         iconEye = document.getElementById(loginEye)
+-
+-   iconEye.addEventListener('click', () =>{
+-      // Change password to text
+-      if(input.type === 'password'){
+-         // Switch to text
+-         input.type = 'text'
+-
+-         // Icon change
+-         iconEye.classList.add('ri-eye-line')
+-         iconEye.classList.remove('ri-eye-off-line')
+-      } else{
+-         // Change to password
+-         input.type = 'password'
+-
+-         // Icon change
+-         iconEye.classList.remove('ri-eye-line')
+-         iconEye.classList.add('ri-eye-off-line')
++/*=============== APP: LOGIN / REGISTRO ===============*/
++class LoginRegisterApp {
++   constructor() {
++      this.loginForm = document.getElementById('login-form')
++      this.registerForm = document.getElementById('register-form')
++      this.successOverlay = document.getElementById('success-overlay')
++
++      this.init()
++   }
++
++   init() {
++      this.initPasswordToggle('login-pass', 'login-eye')
++      this.initPasswordToggle('register-pass', 'register-eye')
++
++      document.getElementById('show-register')
++         .addEventListener('click', (e) => this.switchToRegister(e))
++
++      document.getElementById('show-login')
++         .addEventListener('click', (e) => this.switchToLogin(e))
++
++      document.getElementById('success-accept')
++         .addEventListener('click', () => this.acceptSuccessMessage())
++
++      this.registerForm.addEventListener('submit', (e) => this.handleRegisterSubmit(e))
++      this.loginForm.addEventListener('submit', (e) => this.handleLoginSubmit(e))
++   }
++
++   /*--------- Mostrar/ocultar contraseña ---------*/
++   initPasswordToggle(inputId, eyeId) {
++      const input = document.getElementById(inputId)
++      const iconEye = document.getElementById(eyeId)
++      if (!input || !iconEye) return
++
++      iconEye.addEventListener('click', () => {
++         const isPassword = input.type === 'password'
++         input.type = isPassword ? 'text' : 'password'
++         iconEye.classList.toggle('ri-eye-line', isPassword)
++         iconEye.classList.toggle('ri-eye-off-line', !isPassword)
++      })
++   }
++
++   /*--------- Alternar formularios ---------*/
++   switchToRegister(event) {
++      event.preventDefault()
++      this.loginForm.hidden = true
++      this.registerForm.hidden = false
++   }
++
++   switchToLogin(event) {
++      if (event) event.preventDefault()
++      this.registerForm.hidden = true
++      this.loginForm.hidden = false
++   }
++
++   /*--------- Login (placeholder, listo para conectar a BD) ---------*/
++   handleLoginSubmit(event) {
++      event.preventDefault()
++      const credenciales = {
++         correo: document.getElementById('login-email').value.trim(),
++         contrasena: document.getElementById('login-pass').value
+       }
+-   })
++      // TODO: enviar "credenciales" al backend / base de datos
++      console.log('Login:', credenciales)
++   }
++
++   /*--------- Registro ---------*/
++   handleRegisterSubmit(event) {
++      event.preventDefault()
++
++      const nuevoUsuario = {
++         nombre: document.getElementById('register-name').value.trim(),
++         correo: document.getElementById('register-email').value.trim(),
++         contrasena: document.getElementById('register-pass').value,
++         numeroEmpleado: document.getElementById('register-employee-number').value.trim()
++      }
++
++      if (!this.isValidRegistration(nuevoUsuario)) return
++
++      // TODO: enviar "nuevoUsuario" al backend / base de datos
++
++      this.registerForm.reset()
++      this.successOverlay.hidden = false
++   }
++
++   isValidRegistration({ nombre, correo, contrasena, numeroEmpleado }) {
++      return Boolean(nombre && correo && contrasena && numeroEmpleado)
++   }
++
++   acceptSuccessMessage() {
++      this.successOverlay.hidden = true
++      this.switchToLogin()
++   }
+ }
+ 
+-showHiddenPass('login-pass','login-eye')
+\ No newline at end of file
++document.addEventListener('DOMContentLoaded', () => new LoginRegisterApp())
+diff -ruN orig/escapparate-main/assets/scss/components/_login.scss proj/escapparate-main/assets/scss/components/_login.scss
+--- assets/scss/components/_login.scss	2026-11-24 17:19:30.000000000 +0000
++++ assets/scss/components/_login.scss	2026-11-24 17:23:18.245141130 +0000
+@@ -124,6 +124,44 @@
+    }
+ }
+ 
++.login__form[hidden]{
++   display: none;
++}
++
++/*=============== OVERLAY DE MENSAJE (CUENTA CREADA) ===============*/
++.login__overlay{
++   position: fixed;
++   inset: 0;
++   display: grid;
++   place-items: center;
++   background-color: hsla(0, 0%, 0%, .6);
++   z-index: 100;
++
++   &[hidden]{
++      display: none;
++   }
++}
++.login__message{
++   width: 90%;
++   max-width: 320px;
++   background-color: hsl(0, 0%, 14%);
++   border: 2px solid var(--white-color);
++   border-radius: 1rem;
++   padding: 2rem 1.5rem;
++   text-align: center;
++   display: grid;
++   row-gap: 1rem;
++
++   &-icon{
++      font-size: 3rem;
++      justify-self: center;
++      color: var(--white-color);
++   }
++   &-text{
++      font-weight: var(--font-medium);
++   }
++}
++
+ /* Input focus move up label */
+ .login__input:focus + .login__label{
+    top: -12px;
+diff -ruN orig/escapparate-main/index.html proj/escapparate-main/index.html
+--- index.html	2026-11-24 17:19:30.000000000 +0000
++++ index.html	2026-11-24 17:22:59.581272978 +0000
+@@ -1,5 +1,5 @@
+ <!DOCTYPE html>
+-   <html lang="en">
++   <html lang="es">
+    <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@@ -10,14 +10,15 @@
+       <!--=============== CSS ===============-->
+       <link rel="stylesheet" href="assets/css/styles.css">
+ 
+-      <title>Animated login form - Bedimcode</title>
++      <title>Formulario de inicio de sesion animado - Bedimcode</title>
+    </head>
+    <body>
+       <div class="login">
+-         <img src="assets/img/login-bg.png" alt="login image" class="login__img">
++         <img src="assets/img/login-bg.png" alt="imagen de inicio de sesion" class="login__img">
+ 
+-         <form action="" class="login__form">
+-            <h1 class="login__title">Login</h1>
++         <!--=============== FORMULARIO: INICIAR SESION ===============-->
++         <form action="" class="login__form login__form--active" id="login-form" data-form="login">
++            <h1 class="login__title">Iniciar sesión</h1>
+ 
+             <div class="login__content">
+                <div class="login__box">
+@@ -25,7 +26,7 @@
+ 
+                   <div class="login__box-input">
+                      <input type="email" required class="login__input" id="login-email" placeholder=" ">
+-                     <label for="login-email" class="login__label">Email</label>
++                     <label for="login-email" class="login__label">Correo electrónico</label>
+                   </div>
+                </div>
+ 
+@@ -34,7 +35,7 @@
+ 
+                   <div class="login__box-input">
+                      <input type="password" required class="login__input" id="login-pass" placeholder=" ">
+-                     <label for="login-pass" class="login__label">Password</label>
++                     <label for="login-pass" class="login__label">Contraseña</label>
+                      <i class="ri-eye-off-line login__eye" id="login-eye"></i>
+                   </div>
+                </div>
+@@ -43,21 +44,80 @@
+             <div class="login__check">
+                <div class="login__check-group">
+                   <input type="checkbox" class="login__check-input" id="login-check">
+-                  <label for="login-check" class="login__check-label">Remember me</label>
++                  <label for="login-check" class="login__check-label">Recordarme</label>
+                </div>
+ 
+-               <a href="#" class="login__forgot">Forgot Password?</a>
++               <a href="#" class="login__forgot">¿Olvidaste tu contraseña?</a>
+             </div>
+ 
+-            <button type="submit" class="login__button">Login</button>
++            <button type="submit" class="login__button">Iniciar sesión</button>
+ 
+             <p class="login__register">
+-               Don't have an account? <a href="#">Register</a>
++               ¿No tienes una cuenta? <a href="#" id="show-register">Regístrate</a>
+             </p>
+          </form>
++
++         <!--=============== FORMULARIO: REGISTRO ===============-->
++         <form action="" class="login__form" id="register-form" data-form="register" hidden>
++            <h1 class="login__title">Crear cuenta</h1>
++
++            <div class="login__content">
++               <div class="login__box">
++                  <i class="ri-id-card-line login__icon"></i>
++
++                  <div class="login__box-input">
++                     <input type="text" required class="login__input" id="register-name" placeholder=" ">
++                     <label for="register-name" class="login__label">Nombre completo</label>
++                  </div>
++               </div>
++
++               <div class="login__box">
++                  <i class="ri-user-3-line login__icon"></i>
++
++                  <div class="login__box-input">
++                     <input type="email" required class="login__input" id="register-email" placeholder=" ">
++                     <label for="register-email" class="login__label">Correo electrónico</label>
++                  </div>
++               </div>
++
++               <div class="login__box">
++                  <i class="ri-lock-2-line login__icon"></i>
++
++                  <div class="login__box-input">
++                     <input type="password" required minlength="6" class="login__input" id="register-pass" placeholder=" ">
++                     <label for="register-pass" class="login__label">Contraseña</label>
++                     <i class="ri-eye-off-line login__eye" id="register-eye"></i>
++                  </div>
++               </div>
++
++               <div class="login__box">
++                  <i class="ri-briefcase-line login__icon"></i>
++
++                  <div class="login__box-input">
++                     <input type="text" required class="login__input" id="register-employee-number" placeholder=" ">
++                     <label for="register-employee-number" class="login__label">Número de empleado</label>
++                  </div>
++               </div>
++            </div>
++
++            <button type="submit" class="login__button">Registrarme</button>
++
++            <p class="login__register">
++               ¿Ya tienes una cuenta? <a href="#" id="show-login">Inicia sesión</a>
++            </p>
++         </form>
++
++         <!--=============== MENSAJE: CUENTA CREADA ===============-->
++         <div class="login__overlay" id="success-overlay" hidden>
++            <div class="login__message">
++               <i class="ri-checkbox-circle-line login__message-icon"></i>
++               <p class="login__message-text">Tu cuenta se ha creado correctamente</p>
++               <button type="button" class="login__button" id="success-accept">Aceptar</button>
++            </div>
++         </div>
+       </div>
+-      
++
+       <!--=============== MAIN JS ===============-->
+       <script src="assets/js/main.js"></script>
+    </body>
+-</html>
+\ No newline at end of file
++</html>

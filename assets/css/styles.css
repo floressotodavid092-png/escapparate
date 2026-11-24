@@ -166,6 +166,42 @@ img {
   text-decoration: underline;
 }
 
+.login__form[hidden] {
+  display: none;
+}
+
+/*=============== OVERLAY DE MENSAJE (CUENTA CREADA) ===============*/
+.login__overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background-color: hsla(0, 0%, 0%, 0.6);
+  z-index: 100;
+}
+.login__overlay[hidden] {
+  display: none;
+}
+.login__message {
+  width: 90%;
+  max-width: 320px;
+  background-color: hsl(0, 0%, 14%);
+  border: 2px solid var(--white-color);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  display: grid;
+  row-gap: 1rem;
+}
+.login__message-icon {
+  font-size: 3rem;
+  justify-self: center;
+  color: var(--white-color);
+}
+.login__message-text {
+  font-weight: var(--font-medium);
+}
+
 /* Input focus move up label */
 .login__input:focus + .login__label {
   top: -12px;

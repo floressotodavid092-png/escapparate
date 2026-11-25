@@ -39,20 +39,13 @@ class LoginRegisterApp {
       if (btn) btn.disabled = loading
    }
 
-   async showWelcome(user) {
-      const { data } = await supabase
-         .from('empleados')
-         .select('nombre')
-         .eq('id', user.id)
-         .maybeSingle()
-      const nombre = data?.nombre || user.email
-      document.getElementById('welcome-text').textContent = `¡Bienvenido, ${nombre}!`
-      this.welcomeScreen.hidden = false
+   showWelcome() {
+      window.location.href = './escaparate-rapport-docker/rapport/index.html'
    }
 
    async restoreSession() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session) this.showWelcome(session.user)
+      if (session) this.showWelcome()
    }
 
    async handleLogout() {
@@ -106,7 +99,7 @@ class LoginRegisterApp {
          return
       }
       this.loginForm.reset()
-      this.showWelcome(data.user)
+      this.showWelcome()
    }
 
    /*--------- Registro ---------*/

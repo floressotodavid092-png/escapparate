@@ -1,0 +1,9 @@
+services:
+  rapport:
+    image: nginx:alpine
+    container_name: escaparate-rapport-demo
+    ports:
+      - "8080:80"
+    volumes:
+      - ./rapport:/usr/share/nginx/html:ro
+    restart: unless-stopped

@@ -47,7 +47,7 @@
                   <label for="login-check" class="login__check-label">Recordarme</label>
                </div>
 
-               <a href="#" class="login__forgot">¿Olvidaste tu contraseña?</a>
+               <a href="#" class="login__forgot" id="show-forgot">¿Olvidaste tu contraseña?</a>
             </div>
 
             <button type="submit" class="login__button">Iniciar sesión</button>
@@ -105,6 +105,47 @@
             <p class="login__register">
                ¿Ya tienes una cuenta? <a href="#" id="show-login">Inicia sesión</a>
             </p>
+         </form>
+
+         <!--=============== FORMULARIO: OLVIDÉ MI CONTRASEÑA ===============-->
+         <form action="" class="login__form" id="forgot-form" data-form="forgot" hidden>
+            <h1 class="login__title">Recuperar contraseña</h1>
+
+            <div class="login__content">
+               <div class="login__box">
+                  <i class="ri-mail-line login__icon"></i>
+
+                  <div class="login__box-input">
+                     <input type="email" required class="login__input" id="forgot-email" placeholder=" ">
+                     <label for="forgot-email" class="login__label">Correo electrónico</label>
+                  </div>
+               </div>
+            </div>
+
+            <button type="submit" class="login__button">Enviar enlace</button>
+
+            <p class="login__register">
+               <a href="#" id="forgot-back">Volver a iniciar sesión</a>
+            </p>
+         </form>
+
+         <!--=============== FORMULARIO: NUEVA CONTRASEÑA (desde el correo) ===============-->
+         <form action="" class="login__form" id="reset-form" data-form="reset" hidden>
+            <h1 class="login__title">Nueva contraseña</h1>
+
+            <div class="login__content">
+               <div class="login__box">
+                  <i class="ri-lock-2-line login__icon"></i>
+
+                  <div class="login__box-input">
+                     <input type="password" required minlength="6" class="login__input" id="reset-pass" placeholder=" ">
+                     <label for="reset-pass" class="login__label">Nueva contraseña</label>
+                     <i class="ri-eye-off-line login__eye" id="reset-eye"></i>
+                  </div>
+               </div>
+            </div>
+
+            <button type="submit" class="login__button">Guardar contraseña</button>
          </form>
 
          <!--=============== MENSAJE: CUENTA CREADA ===============-->

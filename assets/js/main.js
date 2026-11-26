@@ -7,6 +7,9 @@ class LoginRegisterApp {
       this.registerForm = document.getElementById('register-form')
       this.successOverlay = document.getElementById('success-overlay')
       this.welcomeScreen = document.getElementById('welcome-screen')
+      this.forgotForm = document.getElementById('forgot-form')
+      this.resetForm = document.getElementById('reset-form')
+      this.isRecovery = /type=recovery/.test(window.location.hash)
 
       this.init()
    }
@@ -30,7 +33,74 @@ class LoginRegisterApp {
       document.getElementById('logout-btn')
          .addEventListener('click', () => this.handleLogout())
 
+      this.initPasswordToggle('reset-pass', 'reset-eye')
+
+      document.getElementById('show-forgot')
+         .addEventListener('click', (e) => this.showForm(e, this.forgotForm))
+      document.getElementById('forgot-back')
+         .addEventListener('click', (e) => this.showForm(e, this.loginForm))
+      this.forgotForm.addEventListener('submit', (e) => this.handleForgotSubmit(e))
+      this.resetForm.addEventListener('submit', (e) => this.handleResetSubmit(e))
+
+      // El enlace del correo dispara PASSWORD_RECOVERY: mostrar formulario de nueva contraseña
+      supabase.auth.onAuthStateChange((event) => {
+         if (event === 'PASSWORD_RECOVERY') this.showForm(null, this.resetForm)
+      })
+      if (this.isRecovery) this.showForm(null, this.resetForm)
+
+      // Cerrar sesión desde el dashboard: index.html?logout=1
+      if (new URLSearchParams(window.location.search).has('logout')) {
+         this.handleLogout().then(() => history.replaceState(null, '', window.location.pathname))
+         return
+      }
+
       this.restoreSession()
+   }
+
+   /*--------- Mostrar un formulario y ocultar los demás ---------*/
+   showForm(event, form) {
+      if (event) event.preventDefault()
+      ;[this.loginForm, this.registerForm, this.forgotForm, this.resetForm]
+         .forEach((f) => { f.hidden = f !== form })
+   }
+
+   /*--------- Olvidé mi contraseña ---------*/
+   async handleForgotSubmit(event) {
+      event.preventDefault()
+      const correo = document.getElementById('forgot-email').value.trim()
+      this.setLoading(this.forgotForm, true)
+      const { error } = await supabase.auth.resetPasswordForEmail(correo, {
+         redirectTo: window.location.origin + window.location.pathname
+      })
+      this.setLoading(this.forgotForm, false)
+      if (error) {
+         console.error('Recuperar contraseña:', error)
+         alert('No se pudo enviar el correo: ' + error.message)
+         return
+      }
+      this.forgotForm.reset()
+      alert('Si el correo existe, te enviamos un enlace para restablecer tu contraseña.')
+      this.showForm(null, this.loginForm)
+   }
+
+   /*--------- Guardar nueva contraseña ---------*/
+   async handleResetSubmit(event) {
+      event.preventDefault()
+      const nueva = document.getElementById('reset-pass').value
+      this.setLoading(this.resetForm, true)
+      const { error } = await supabase.auth.updateUser({ password: nueva })
+      this.setLoading(this.resetForm, false)
+      if (error) {
+         console.error('Nueva contraseña:', error)
+         alert('No se pudo actualizar la contraseña: ' + error.message)
+         return
+      }
+      await supabase.auth.signOut()
+      this.isRecovery = false
+      history.replaceState(null, '', window.location.pathname)
+      this.resetForm.reset()
+      alert('Contraseña actualizada. Inicia sesión.')
+      this.showForm(null, this.loginForm)
    }
 
    /*--------- Utilidades ---------*/
@@ -45,7 +115,7 @@ class LoginRegisterApp {
 
    async restoreSession() {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session) this.showWelcome()
+      if (session && !this.isRecovery) this.showWelcome()
    }
 
    async handleLogout() {
